@@ -1,0 +1,5 @@
+#Debug folder
+Debug/
+
+#visual studio executing related
+.vs/
