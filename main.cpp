@@ -2,7 +2,7 @@
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_primitives.h>
 //#include <allegro5/allegro_color.h>
-
+//checking synchronize
 ALLEGRO_COLOR color_green = al_map_rgb(0,0xff,0);
 
 int main(int argc, char **argv) {
