@@ -1,11 +1,3 @@
-//#include <iostream>
-//
-//using namespace std;
-//
-//int main() {
-//
-//    return 0;
-//}
 #include <stdio.h>
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_primitives.h>
