@@ -45,8 +45,8 @@ bool Snake::Die(void) {         // 1. hit my body(trouble with grow / solution: 
         } else {}
     }
     // condition 3
-    if (head.x > 580 && head.x <0) {return true;}
-    if (head.y > 580 && head.y <0) {return true;}
+    if (head.x > 580 || head.x <0) {return true;}
+    if (head.y > 580 || head.y <0) {return true;}
 
     return false;
 }
