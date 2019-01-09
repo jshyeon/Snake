@@ -19,11 +19,11 @@ private:
 	std::vector <vec2> body;
 
 public:
-	std::vector<vec2> GetBodyPosition(void);
+	std::vector<vec2> Snake::GetBodyPosition(void) {return body;}
 	void SetDir(int key);
 	void Move(void);
 	void Grow(void);
-	bool Eat(void);
+	bool Eat(vec2);
 	bool Die(void);
 	
 };
