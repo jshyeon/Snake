@@ -39,6 +39,7 @@ int main(int argc, char **argv) {
 	// create window
 	ALLEGRO_DISPLAY *display;
 	ALLEGRO_EVENT_QUEUE *event_queue;
+	ALLEGRO_TIMER *timer;
 	display = al_create_display(600, 600);
 	if (!display) {
 		fprintf(stderr, "failed to create display!\n");
@@ -50,8 +51,15 @@ int main(int argc, char **argv) {
 		al_destroy_display(display);
 		return -1;
 	}
+	timer = al_create_timer(0.2);
+
 	al_install_keyboard();// add handling keyboard setting fails
+
+	al_register_event_source(event_queue, al_get_display_event_source(display));
 	al_register_event_source(event_queue, al_get_keyboard_event_source());
+	al_register_event_source(event_queue, al_get_timer_event_source(timer));
+
+	al_start_timer(timer);
 
 	Snake snake1p;
 
@@ -70,48 +78,64 @@ int main(int argc, char **argv) {
 		}
 
 		DrawFood(food_loc);
-		// wait until get keyboard input
+
+		// display what has been drawn on the background buffer
+		al_flip_display();
+
+		ALLEGRO_EVENT event;
+
+		if (!al_is_event_queue_empty(event_queue)) {
+			al_wait_for_event(event_queue, &event);
+			if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
+				running = false;
+			else if (event.type == ALLEGRO_EVENT_TIMER) {
+				if (event.timer.source == timer) {
+					// wait until get keyboard input
 		// when get arrow keyboard input call SetDir()
+
+
+
+					// update snake location with calling Move()
+					if (!snake1p.Die()) {
+						if (snake1p.Eat(food_loc)) {
+							snake1p.Grow();
+							food_loc = GenFood();
+						}
+						else {
+							snake1p.Move();
+						}
+					}
+					else {
+						break;
+					}
+				}
+			}
+		}
 		ALLEGRO_KEYBOARD_STATE keyState;
 
 		al_get_keyboard_state(&keyState);
 
-		if (al_key_down(&keyState, ALLEGRO_KEY_RIGHT))
+		if (al_key_down(&keyState, ALLEGRO_KEY_RIGHT) && snake1p.GetDir().x != -1)
 			snake1p.SetDir(KEY_RIGHT);
-		else if (al_key_down(&keyState, ALLEGRO_KEY_LEFT))
+		else if (al_key_down(&keyState, ALLEGRO_KEY_LEFT) && snake1p.GetDir().x != 1)
 			snake1p.SetDir(KEY_LEFT);
-		else if (al_key_down(&keyState, ALLEGRO_KEY_DOWN))
+		else if (al_key_down(&keyState, ALLEGRO_KEY_DOWN) && snake1p.GetDir().y != -1)
 			snake1p.SetDir(KEY_DOWN);
-		else if (al_key_down(&keyState, ALLEGRO_KEY_UP))
+		else if (al_key_down(&keyState, ALLEGRO_KEY_UP) && snake1p.GetDir().y != 1)
 			snake1p.SetDir(KEY_UP);
 
 		
-		// update snake location with calling Move()
-		if (!snake1p.Die()) {
-			if (snake1p.Eat(food_loc)) {
-				snake1p.Grow();
-				GenFood();
-				DrawFood(food_loc);
-			}
-			else {
-				snake1p.Move();
-			}
-		}
-		else {
-			break;
-		}
 
 		// case handling for eating food
 
 		// case handling for crush
-		_sleep(100.0);
-		// display what has been drawn on the background buffer
-		al_flip_display();
+		//_sleep(100.0);
+	
 	
 	}
 	
 	al_destroy_display(display);
-
+	
 	return 0;
 	
 }

@@ -4,7 +4,7 @@
 using namespace std;
 
 //int size = 20;                  // it isn't read
-//vec2 Snake::GetDir(void) {}
+
 void Snake::SetDir(int key) {   // KEY_LEFT, KEY_RIGHT, KEY_UP, KEY_DOWN, find these numbers
     if          (key == KEY_LEFT) {
         dir.x = -1;

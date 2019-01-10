@@ -26,6 +26,7 @@ private:
 
 public:
 	std::vector<vec2> Snake::GetBodyPosition(void) {return body;}
+	vec2 Snake::GetDir(void) { return dir; }
 	void SetDir(int key);
 	void Move(void);
 	void Grow(void);
