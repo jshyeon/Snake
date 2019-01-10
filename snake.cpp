@@ -27,10 +27,12 @@ void Snake::Move(void) {        // should i make new vec2 using pointer?
     body.pop_back();
 }
 void Snake::Grow(void) {        // it will be positioned after "Eat"
-    body.insert(body.end(), head);   // end() or end()-1 ?
+	head.x = head.x + dir.x * 20;
+	head.y = head.y + dir.y * 20;
+	body.insert(body.begin(), head);
 }
 bool Snake::Eat(vec2 food) {    // it should be positioned after "move", so I can check whether the head touch the food
-    if (head.x == food.x && head.y == food.y) {
+    if (head.x + dir.x*20 == food.x && head.y + dir.y*20 == food.y) {
         return true;
     }
 	return false;
