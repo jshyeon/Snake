@@ -22,7 +22,7 @@ class Snake {
 private:
 	vec2 head = { 300,300 };
 	vec2 dir = { 0,0 };
-	std::vector <vec2> body;
+	std::vector <vec2> body{ head };
 
 public:
 	std::vector<vec2> Snake::GetBodyPosition(void) {return body;}

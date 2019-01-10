@@ -26,8 +26,10 @@ vec2 GenFood(void) {
 	srand(time(NULL));
 	food_loc.x = (rand() % 30) * 20;
 	food_loc.y = (rand() % 30) * 20;
-	DrawBox(food_loc, 0, 200, 0);
 	return food_loc;
+}
+void DrawFood(vec2 food_loc) {
+	DrawBox(food_loc, 0, 200, 0);
 }
 
 int main(int argc, char **argv) {
@@ -58,13 +60,16 @@ int main(int argc, char **argv) {
 
 	bool running = true;
 	while(running) {
+		al_clear_to_color(al_map_rgb(0, 0, 0));
 		std::vector<vec2> body = snake1p.GetBodyPosition();
-		int body_length = body.size;// this might be mallicious
+		int body_length = static_cast<int>(body.size());// this might be mallicious
 
 		// draw snake at initial location
 		for (int i = 0; i < body_length; i++) {// it will draw whole body at the start of each itertaion
 			DrawBox(body[i], 200, 0, 100);
 		}
+
+		DrawFood(food_loc);
 		// wait until get keyboard input
 		// when get arrow keyboard input call SetDir()
 		ALLEGRO_KEYBOARD_STATE keyState;
@@ -82,14 +87,27 @@ int main(int argc, char **argv) {
 
 		
 		// update snake location with calling Move()
-
+		if (!snake1p.Die()) {
+			if (snake1p.Eat(food_loc)) {
+				snake1p.Grow();
+				GenFood();
+				DrawFood(food_loc);
+			}
+			else {
+				snake1p.Move();
+			}
+		}
+		else {
+			break;
+		}
 
 		// case handling for eating food
 
 		// case handling for crush
-
+		_sleep(100.0);
 		// display what has been drawn on the background buffer
 		al_flip_display();
+	
 	}
 	
 	al_destroy_display(display);
