@@ -11,11 +11,17 @@ typedef struct {
 	unsigned y;
 }vec2;
 
+enum {
+	KEY_LEFT = 1,
+	KEY_RIGHT = 2,
+	KEY_UP = 3,
+	KEY_DOWN = 4
+};
 
 class Snake {
 private:
-	vec2 head;
-	vec2 dir;
+	vec2 head = { 300,300 };
+	vec2 dir = { 0,0 };
 	std::vector <vec2> body;
 
 public:
