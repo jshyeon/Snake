@@ -25,6 +25,9 @@ void Snake::Move(void) {        // should i make new vec2 using pointer?
     head.y = head.y + dir.y * 20;
     body.insert(body.begin(), head);
     body.pop_back();
+	
+	last_movement.x = dir.x;
+	last_movement.y = dir.y;
 }
 void Snake::Grow(void) {        // it will be positioned after "Eat"
 	head.x = head.x + dir.x * 20;
@@ -44,7 +47,7 @@ bool Snake::Die(void) {         // 1. hit my body(trouble with grow / solution: 
     for (vector<vec2>::iterator a = body.begin()+1; a != body.end(); a++) {
         if (head.x == a->x && head.y == a->y) {
             return true;
-        } else {}
+        }// else {}
     }
     // condition 3
     if (head.x > 580 || head.x <0) {return true;}
