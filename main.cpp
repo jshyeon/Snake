@@ -60,7 +60,7 @@ int main(int argc, char **argv) {
 
 	al_start_timer(timer);
 
-	Snake snake1p(150,150), snake2p(450,450);
+	Snake snake1p(140,140), snake2p(460,460);
 
 	// generate first food
 	srand(time(NULL));
