@@ -123,7 +123,7 @@ int main(int argc, char **argv) {
 
 
 						// update snake location with calling Move()
-						if (!snake1p.Die()) {				///////////////////////////////// need argument ////////////////////////////
+						if (!snake1p.Die()) {
 							if (snake1p.Eat(food_loc)) {
 								snake1p.Grow();
 								food_loc = GenFood();
