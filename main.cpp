@@ -23,7 +23,6 @@ void DrawBox(vec2 coord, int r, int g, int b) {
 // Generate food at random rocation on the window
 vec2 GenFood(void) {
 	vec2 food_loc;
-	srand(time(NULL));
 	food_loc.x = (rand() % 30) * 20;
 	food_loc.y = (rand() % 30) * 20;
 	return food_loc;
@@ -61,9 +60,10 @@ int main(int argc, char **argv) {
 
 	al_start_timer(timer);
 
-	Snake snake1p;
+	Snake snake1p(150,150), snake2p(450,450);
 
 	// generate first food
+	srand(time(NULL));
 	vec2 food_loc = GenFood();
 
 	bool running = true;
@@ -72,12 +72,17 @@ int main(int argc, char **argv) {
 
 		// display what has been drawn on the background buffer
 		al_clear_to_color(al_map_rgb(0, 0, 0));
-		std::vector<vec2> body = snake1p.GetBodyPosition();
-		int body_length = static_cast<int>(body.size());// this might be mallicious
+		std::vector<vec2> body1 = snake1p.GetBodyPosition();
+		std::vector<vec2> body2 = snake2p.GetBodyPosition();
+		int body_length1 = static_cast<int>(body1.size());// this might be mallicious
+		int body_length2 = static_cast<int>(body2.size());
 
 		// draw snake at initial location
-		for (int i = 0; i < body_length; i++) {// it will draw whole body at the start of each itertaion
-			DrawBox(body[i], 200, 0, 100);
+		for (int i = 0; i < body_length1; i++) {// it will draw whole body at the start of each itertaion
+			DrawBox(body1[i], 200, 0, 100);
+		}
+		for (int i = 0; i < body_length2; i++) {
+			DrawBox(body2[i], 100, 200, 50);
 		}
 
 		DrawFood(food_loc);
@@ -123,16 +128,30 @@ int main(int argc, char **argv) {
 
 
 						// update snake location with calling Move()
-						if (!snake1p.Die()) {
+						if (!snake1p.Die(snake2p) && !snake2p.Die(snake1p)) {
 							if (snake1p.Eat(food_loc)) {
 								snake1p.Grow();
 								food_loc = GenFood();
 							}
+							else if (snake2p.Eat(food_loc)) {
+								snake2p.Grow();
+								food_loc = GenFood();
+							}
 							else {
 								snake1p.Move();
+								snake2p.Move();
 							}
 						}
-						else {
+						else if (snake1p.Die(snake2p) && snake2p.Die(snake1p)){
+							printf("Snake 1 dead!\n");
+							break;
+						}
+						else if (snake2p.Die(snake1p) && !snake1p.Die(snake2p)) {
+							printf("Snake 2 dead!\n");
+							break;
+						}
+						else if (snake1p.Die(snake2p) && snake2p.Die(snake1p)) {
+							printf("Draw!\n");
 							break;
 						}
 					}
@@ -141,21 +160,37 @@ int main(int argc, char **argv) {
 		
 
 		if (event.type == ALLEGRO_EVENT_KEY_DOWN) {										// when multiple key is pressed it does not work
-			if (event.keyboard.keycode == ALLEGRO_KEY_RIGHT && (snake1p.GetDir().x != -1 || body_length == 1))
+			if (event.keyboard.keycode == ALLEGRO_KEY_RIGHT && (snake1p.GetDir().x != -1 || body_length1 == 1))
 			{
 				snake1p.SetDir(KEY_RIGHT); printf("move right\n"); event.keyboard.type = ALLEGRO_EVENT_KEY_UP;
 			}
-			else if (event.keyboard.keycode == ALLEGRO_KEY_LEFT && (snake1p.GetDir().x != 1 || body_length == 1))
+			else if (event.keyboard.keycode == ALLEGRO_KEY_LEFT && (snake1p.GetDir().x != 1 || body_length1 == 1))
 			{
 				snake1p.SetDir(KEY_LEFT); printf("move left\n"); event.keyboard.type = ALLEGRO_EVENT_KEY_UP;
 			}
-			else if (event.keyboard.keycode == ALLEGRO_KEY_DOWN && (snake1p.GetDir().y != -1 || body_length == 1))
+			else if (event.keyboard.keycode == ALLEGRO_KEY_DOWN && (snake1p.GetDir().y != -1 || body_length1 == 1))
 			{
 				snake1p.SetDir(KEY_DOWN); printf("move down\n"); event.keyboard.type = ALLEGRO_EVENT_KEY_UP;
 			}
-			else if (event.keyboard.keycode == ALLEGRO_KEY_UP && (snake1p.GetDir().y != 1 || body_length == 1))
+			else if (event.keyboard.keycode == ALLEGRO_KEY_UP && (snake1p.GetDir().y != 1 || body_length1 == 1))
 			{
 				snake1p.SetDir(KEY_UP); printf("move up\n"); event.keyboard.type = ALLEGRO_EVENT_KEY_UP;
+			}
+			else if (event.keyboard.keycode == ALLEGRO_KEY_D && (snake2p.GetDir().x != -1 || body_length2 == 1))
+			{
+				snake2p.SetDir(KEY_RIGHT); printf("move right\n"); event.keyboard.type = ALLEGRO_EVENT_KEY_UP;
+			}
+			else if (event.keyboard.keycode == ALLEGRO_KEY_A && (snake2p.GetDir().x != 1 || body_length2 == 1))
+			{
+				snake2p.SetDir(KEY_LEFT); printf("move left\n"); event.keyboard.type = ALLEGRO_EVENT_KEY_UP;
+			}
+			else if (event.keyboard.keycode == ALLEGRO_KEY_S && (snake2p.GetDir().y != -1 || body_length2 == 1))
+			{
+				snake2p.SetDir(KEY_DOWN); printf("move down\n"); event.keyboard.type = ALLEGRO_EVENT_KEY_UP;
+			}
+			else if (event.keyboard.keycode == ALLEGRO_KEY_W && (snake2p.GetDir().y != 1 || body_length2 == 1))
+			{
+				snake2p.SetDir(KEY_UP); printf("move up\n"); event.keyboard.type = ALLEGRO_EVENT_KEY_UP;
 			}
 		}
 		}
@@ -182,20 +217,20 @@ int main(int argc, char **argv) {
 		// case handling for crush
 		//_sleep(100.0);
 	
-		al_clear_to_color(al_map_rgb(0, 0, 0));
-		body = snake1p.GetBodyPosition();
-		body_length = static_cast<int>(body.size());// this might be mallicious
+		//al_clear_to_color(al_map_rgb(0, 0, 0));
+		//body = snake1p.getbodyposition();
+		//body_length = static_cast<int>(body.size());// this might be mallicious
 
-		// draw snake at initial location
-		for (int i = 0; i < body_length; i++) {// it will draw whole body at the start of each itertaion
-			DrawBox(body[i], 200, 0, 100);
-		}
+		//// draw snake at initial location
+		//for (int i = 0; i < body_length; i++) {// it will draw whole body at the start of each itertaion
+		//	drawbox(body[i], 200, 0, 100);
+		//}
 
-		DrawFood(food_loc);
-		al_flip_display();
+		//drawfood(food_loc);
+		//al_flip_display();
 	}
 	
-	al_destroy_display(display);
+	//al_destroy_display(display);
 	
 	return 0;
 	
