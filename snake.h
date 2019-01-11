@@ -23,12 +23,13 @@ private:
 	vec2 head = { 300,300 };
 	vec2 dir = { 0,0 };
 	std::vector <vec2> body{ head };
+	vec2 last_movement = { 0,0 };
 
 public:
 	Snake() {}
 	Snake(int X, int Y) {head.x = X; head.y = Y;}
 	std::vector<vec2> Snake::GetBodyPosition(void) {return body;}
-	vec2 Snake::GetDir(void) { return dir; }
+	vec2 Snake::GetDir(void) { return last_movement; }
 	void SetDir(int key);
 	void Move(void);
 	void Grow(void);
