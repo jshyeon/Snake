@@ -37,7 +37,7 @@ bool Snake::Eat(vec2 food) {    // it should be positioned after "move", so I ca
     }
 	return false;
 }
-bool Snake::Die(void) {         // 1. hit my body(trouble with grow / solution: "Grow"->"Die" order), 2. push exact reverse direction, 
+bool Snake::Die(Snake snake2) {         // 1. hit my body(trouble with grow / solution: "Grow"->"Die" order), 2. push exact reverse direction, 
                                 // 3. hit wall, 4. hit other worm, "5. hit other worm face to face" : condition 1 & 3
     /*bool D;                   is it necessary?*/
     // condition 1
@@ -46,6 +46,12 @@ bool Snake::Die(void) {         // 1. hit my body(trouble with grow / solution: 
             return true;
         } else {}
     }
+	// condition collision
+	vector<vec2> body2 = snake2.GetBodyPosition();
+	for (vector<vec2>::iterator a = body2.begin(); a != body2.end(); a++) {
+		if (head.x == a->x && head.y == a->y) return true;
+	}
+
     // condition 3
     if (head.x > 580 || head.x <0) {return true;}
     if (head.y > 580 || head.y <0) {return true;}

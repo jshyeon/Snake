@@ -7,8 +7,8 @@
 #include <vector>
 
 typedef struct {
-	unsigned x;
-	unsigned y;
+	int x;
+	int y;
 }vec2;
 
 enum {
@@ -25,13 +25,15 @@ private:
 	std::vector <vec2> body{ head };
 
 public:
+	Snake() {}
+	Snake(int X, int Y) {head.x = X; head.y = Y;}
 	std::vector<vec2> Snake::GetBodyPosition(void) {return body;}
 	vec2 Snake::GetDir(void) { return dir; }
 	void SetDir(int key);
 	void Move(void);
 	void Grow(void);
 	bool Eat(vec2);
-	bool Die(void);
+	bool Die(Snake);
 	
 };
 
