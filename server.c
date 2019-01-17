@@ -1,3 +1,6 @@
+// sholud put '-pthread' option in compile
+// ex) gcc -pthread -o a a.c
+
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <arpa/inet.h>
@@ -8,18 +11,19 @@
 #include <pthread.h>
 #define MAXBUF 256
 
-void *p_accept(void *arg) {
-// ref "client_sockfd = accept(server_sockfd, (struct sockaddr *) &clientaddr, &client_len);"
-	arg.client_sockfd = accept(arg.server_sockfd, arg.clientaddr, arg.client_len);
-
-	return (void *)arg.client_sockfd;	// I will not use this return
-}
-
 struct args {
 	int client_sockfd;
 	int server_sockfd;
-	sockaddr *clientaddr;
+	struct sockaddr *clientaddr;
 	int *client_len;
+};
+
+void *p_accept(void *argument) {
+// ref "client_sockfd = accept(server_sockfd, (struct sockaddr *) &clientaddr, &client_len);"
+	struct args arg = *(struct args *) argument;
+	arg.client_sockfd = accept(arg.server_sockfd, arg.clientaddr, arg.client_len);
+
+	return argument;	// I will not use this return
 }
 
 int main(int argc, char **argv)
@@ -29,13 +33,13 @@ int main(int argc, char **argv)
     int n;			// return value for several function
     char buf[MAXBUF];
     struct sockaddr_in clientaddr, serveraddr;
-    bool lock;
+    struct args args_p1;
+    struct args args_p2;
     pthread_t p1 = -10, p2 = -10;
-
+    
     client_len = sizeof(clientaddr);
 
-    if ((server_sockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == -1)
-    {
+    if ((server_sockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == -1) {
         perror("socket error : ");
         exit(0);
     }
@@ -49,10 +53,9 @@ int main(int argc, char **argv)
 
     while(1) {
 	if(p1 == -10) {
-		args args_p1;
 		args_p1.client_sockfd = client1_sockfd;
 		args_p1.server_sockfd = server_sockfd;
-		args_p1.clientaddr = &clientaddr;
+		args_p1.clientaddr = &clientaddr;	// what warning?
 		args_p1.client_len = &client_len;
 		n = pthread_create(&p1, NULL, p_accept, &args_p1);
 		// automatically p1 is saved
@@ -74,14 +77,13 @@ int main(int argc, char **argv)
 		continue;
 	} 
 	else if(p1 != -10 && p2 == -10) {
-		args args_p2;
 		args_p2.client_sockfd = client2_sockfd;
 		args_p2.server_sockfd = server_sockfd;
-		args_p2.clientaddr = &clientaddr;
+		args_p2.clientaddr = &clientaddr;	// what warning?
 		args_p2.client_len = &client_len;
 		n = pthread_create(&p2, NULL, p_accept, &args_p2);
 
-		if (args_p1.client_sockfd == -1) {
+		if (args_p2.client_sockfd == -1) {
 			perror("accept error\n");
 			continue;
 		}
