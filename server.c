@@ -1,78 +1,93 @@
-//Asynchronous Chatting Server
+#include <sys/socket.h>
+#include <sys/stat.h>
+#include <arpa/inet.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <netdb.h>
-#include <netinet/in.h>
 #include <string.h>
-#include <sys/types.h>
-#include <signal.h>
+#include <stdlib.h>
+#include <unistd.h>
+#define MAXBUF 1024	// same length with client
+int main(int argc, char **argv)
+{
+    int server_sockfd, client1_sockfd, client2_sockfd;
+    int client_len, n, status, waiting;
+    char buf[MAXBUF];
+    char *quit = "quit";
+    struct sockaddr_in clientaddr, serveraddr;
+    pid_t p1 = 100, p2 = 100;
 
-/*
-Global structure for managing sockfd and its nickname and maybe room number
-*/
+    client_len = sizeof(clientaddr);
 
-int main( int argc, char *argv[] ) {
-   int sockfd, newsockfd, portno, clilen;
-   char buffer[256];
-   struct sockaddr_in serv_addr, cli_addr;
-   int  n, status;
-   bool lock = false;
-   pid_t pid, child_pid;
+    if ((server_sockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == -1)
+    {
+        perror("socket error : ");
+        exit(0);
+    }
+    bzero(&serveraddr, sizeof(serveraddr));
+    serveraddr.sin_family = AF_INET;
+    serveraddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    serveraddr.sin_port = htons(atoi(argv[1]));
 
-   /* Initialize socket structure */
-   bzero((char *) &serv_addr, sizeof(serv_addr));
-   portno = 5000;
+    bind (server_sockfd, (struct sockaddr *)&serveraddr, sizeof(serveraddr));
+    listen(server_sockfd, 5);
 
-   serv_addr.sin_family = AF_INET;
-   serv_addr.sin_addr.s_addr = INADDR_ANY;
-   serv_addr.sin_port = htons(portno);
+    while(1) {
+		if (p1 == 100) {client1_sockfd = accept(server_sockfd, (struct sockaddr *) &clientaddr, &client_len);}
+		else if (p1 != 100 && p2 == 100) {client2_sockfd = accept(server_sockfd, (struct sockaddr *) &clientaddr, &client_len);}
+		else {
+			waitpid(p1, &stautus, 0); 
+			waitpid(p2, &stautus, 0);
+			close(server_sockfd);
+			return 0;
+		}
 
-   clilen = sizeof(cli_addr);
-   sockfd = socket(AF_INET, SOCK_STREAM, 0);
-   bind(sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
-   listen(sockfd, 256);
-
-   clilen = sizeof(cli_addr);
-   while (1) {
-     newsockfd = accept(sockfd, (struct sockaddr*)&cli_addr, &clilen);
-     pid = fork();
-     if (pid == 0) {
-	//close(sockfd);		// necessary?
-	child_pid = getpid();
-	while (1) {
-		while (lock == true) {}
-		lock = true;
-        	bzero(buffer, 256);
-		scanf("%s", buffer, 255);	// automatically, NULL is added
-		n = strcmp(buffer, "/quit");	// is this right? //
-		if (!n) {lock = false; break;}	// is this right? //
-        	printf("Write: %s\n", buffer);
-        	write(newsockfd, buffer, 256);
-		lock = false;
-	}
-	lock = false;
-	printf("Quit\n");
-	close(newsockfd);
-	exit(0);
-     } else if (pid == -1) {
-        perror("Fail in fork()");   // basically \n is involved
-	exit(0);
-     } else {
-	while(1) {
-		while (lock == true) {}
-		lock = true;
-		bzero(buffer, 256);
-		read(newsockfd, buffer, 255);	// how could i check "read" is failed????? //
-////////////////// check "read" is failed or not //////////////////////////////
-		n = strcmp(buffer, "/quit");	// is this right? //
-		if (!n) {lock = false; break;}	// is this right? //
-		printf("Read: $s\n", buffer);
-		lock = false;
-	}
-	lock = false;
-	kill(child_pid, SIGKILL);
-	close(newsockfd);   // necessary?
-     }
-   }
-   return 0;
+		pid = fork();
+		if (pid == 0) {
+			if (p1 == 100) {
+				p1 = getpid();
+				write(client1_sockfd, buf, MAXBUF);	// waiting message
+				while (lock != 1) {}			// waiting
+			}
+			else {
+				p2 = getpid();
+				lock = 1;
+				
+			}
+		} else if (pid == -1) {
+			perror("fork() error : ");
+			continue;
+		} else {
+			// close(server_sockfd);
+			continue;
+		}
+    }
+    return 0;
 }
+/*///////////////////////////////////////
+	        memset(buf, 0x00, MAXBUF);
+	        printf("New Client Connect: %s\n", inet_ntoa(clientaddr.sin_addr));
+	
+	        if (n = read(client_sockfd, buf, MAXBUF)) {
+printf("READ\n");
+		if (n <= 0) {
+                	close(client_sockfd);
+                	continue;
+		}
+            	if (strcmp(buf, quit) == 0) {close(client_sockfd);}
+            	else {printf("read : %s", buf);}
+		
+		memset(buf, 0x00, MAXBUF);
+        }
+
+        else if (scanf("%1024s", buf)) {
+printf("WRITE\n");
+		n = write(client_sockfd, buf, MAXBUF);
+		if (n <= 0) {
+			perror("write error : ");
+        		close(client_sockfd);
+		}
+		if (strcmp(buf, quit) == 0) {close(client_sockfd);}
+ 		else {printf("write : %s", buf);}
+		
+		memset(buf, 0x00, MAXBUF);
+	}
+*////////////////////////////////////////
