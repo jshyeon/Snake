@@ -19,10 +19,10 @@ struct args {
 };
 
 void *p_accept(void *argument) {
-// ref "client_sockfd = accept(server_sockfd, (struct sockaddr *) &clientaddr, &client_len);"
 	struct args arg = *(struct args *) argument;
-	arg.client_sockfd = accept(arg.server_sockfd, arg.clientaddr, arg.client_len);
-
+printf("In the p_accept\n");
+	arg.client_sockfd = accept(arg.server_sockfd, arg.clientaddr, arg.client_len);	// !@#$
+printf("client_sockfd = %d\n", arg.client_sockfd);
 	return argument;	// I will not use this return
 }
 
@@ -30,7 +30,8 @@ int main(int argc, char **argv)
 {
     int server_sockfd, client1_sockfd, client2_sockfd;
     int client_len;
-    int n;			// return value for several function
+    int n;
+    int def1, def2;
     char buf[MAXBUF];
     struct sockaddr_in clientaddr, serveraddr;
     struct args args_p1;
@@ -57,21 +58,28 @@ int main(int argc, char **argv)
 		args_p1.server_sockfd = server_sockfd;
 		args_p1.clientaddr = &clientaddr;	// what warning?
 		args_p1.client_len = &client_len;
+
+		def1 = args_p1.client_sockfd;
+
 		n = pthread_create(&p1, NULL, p_accept, &args_p1);
 		// automatically p1 is saved
 		
-		if (args_p1.client_sockfd == -1) {
-			perror("accept error\n");
-			continue;
+		for(n = 0; n < 3; n++) {	// need some codition whether it is connected
+			sleep(1);
+		}
+		if (args_p1.client_sockfd == def1) {
+			printf("accept error\n");
+			exit(0);
+			//continue;
 		}
 		else {
 			memset(buf, 0x00, MAXBUF);
-			strcpy(buf, "Connected!\n");
+			strcpy(buf, "Player1 Connected!\n");
 			write(args_p1.client_sockfd, buf, MAXBUF);
 		}
 
 		memset(buf, 0x00, MAXBUF);
-		strcpy(buf, "wait for player 2");
+		strcpy(buf, "wait for Player2\n");
 		write(args_p1.client_sockfd, buf, MAXBUF);
 
 		continue;
@@ -81,15 +89,22 @@ int main(int argc, char **argv)
 		args_p2.server_sockfd = server_sockfd;
 		args_p2.clientaddr = &clientaddr;	// what warning?
 		args_p2.client_len = &client_len;
+
+		def2 = args_p2.client_sockfd;
+
 		n = pthread_create(&p2, NULL, p_accept, &args_p2);
 
-		if (args_p2.client_sockfd == -1) {
-			perror("accept error\n");
-			continue;
+		for(n = 0; n < 3; n++) {	// need some codition whether it is connected
+			sleep(1);
+		}
+		if (args_p2.client_sockfd == def2) {
+			printf("accept error\n");
+			exit(0);
+			//continue;	maybe need some close()
 		}
 		else {
 			memset(buf, 0x00, MAXBUF);
-			strcpy(buf, "Connected!\n");
+			strcpy(buf, "Player2 Connected!\n");
 			write(args_p1.client_sockfd, buf, MAXBUF);
 		}
 
@@ -102,6 +117,8 @@ int main(int argc, char **argv)
 		/// network communication ///
 
 	}
+		//pthread_join(thread_t, (void **)&status);
+		//printf("Thread End %d\n", status);
 		close(client1_sockfd);
 		close(client2_sockfd);
 		close(server_sockfd);
