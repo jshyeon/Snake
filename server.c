@@ -42,29 +42,17 @@ void *p_accept(void *argument) {
 	} else {}
 
 	while(1) {
-		if (buf[0] != '$') {	/*case1*/
-			memset(buf, 0x00, 256);
-			read(arg.client_sockfd, buf, 255);	// 255? 256?
-			
-			n = strcmp(buf, "/quit");	// this is the problem;
-			if (!n) {break;}		// this is the problem;
-			
-			memset(buf, 0x00, MAXBUF);
-			strcpy(buf, "Player Connected!\n");
-			write(arg.client_sockfd, buf, MAXBUF);
-		} else {		/*case2*/
-			memset(buf, 0x00, 256);
-			read(arg.client_sockfd, buf, 255);	// 255? 256?
-			if (player_name == 1) {
-				write(client2_sockfd, buf, MAXBUF);
-			}
-			else {
-				write(client1_sockfd, buf, MAXBUF);
-			}
-			
-			n = strcmp(buf, "/quit");	// this is the problem;
-			if (!n) {break;}		// this is the problem;
+		memset(buf, 0x00, 256);
+		read(arg.client_sockfd, buf, 255);	// 255? 256?
+		if (player_name == 1) {
+			write(client2_sockfd, buf, MAXBUF);
 		}
+		else {
+			write(client1_sockfd, buf, MAXBUF);
+		}
+			
+		n = strcmp(buf, "/quit");	// this is the problem;
+		if (!n) {break;}		// this is the problem;
 	}
 	close(arg.client_sockfd);
 	pthread_exit((void *) 0);
@@ -145,3 +133,28 @@ printf("client1_sockfd = %d / client2_socfd = %d\n", client1_sockfd, client2_soc
     }
     return 0;
 }
+/*
+		if (buf[0] != '$') {	case1
+			memset(buf, 0x00, 256);
+			read(arg.client_sockfd, buf, 255);	// 255? 256?
+			
+			n = strcmp(buf, "/quit");	// this is the problem;
+			if (!n) {break;}		// this is the problem;
+			
+			memset(buf, 0x00, MAXBUF);
+			strcpy(buf, "Player Connected!\n");
+			write(arg.client_sockfd, buf, MAXBUF);
+		} else {		case2
+			memset(buf, 0x00, 256);
+			read(arg.client_sockfd, buf, 255);	// 255? 256?
+			if (player_name == 1) {
+				write(client2_sockfd, buf, MAXBUF);
+			}
+			else {
+				write(client1_sockfd, buf, MAXBUF);
+			}
+			
+			n = strcmp(buf, "/quit");	// this is the problem;
+			if (!n) {break;}		// this is the problem;
+		}
+*/
