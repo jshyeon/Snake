@@ -12,8 +12,8 @@
 #define MAXBUF 256
 
 short lock;
-int client1_sockfd, 
-    client2_sockfd;
+int client1_sockfd = -10, 
+    client2_sockfd = -10;
 
 struct args {
 	int client_sockfd;
@@ -34,12 +34,13 @@ void *p_accept(void *argument) {
 	lock = 0;
 
 	if (client1_sockfd == -10) {
-		client1_sockfd == arg.client_sockfd;
+		client1_sockfd = arg.client_sockfd;
 		player_name = 1;
 	} else if (client1_sockfd != -10 && client2_sockfd == -10) {
-		client2_sockfd == arg.client_sockfd;
+		client2_sockfd = arg.client_sockfd;
 		player_name = 2;
 	} else {}
+
 
 	while(1) {
 		memset(buf, 0x00, 256);
@@ -66,9 +67,7 @@ int main(int argc, char **argv)
     char buf[MAXBUF];
     struct sockaddr_in clientaddr, serveraddr;
     struct args args_p1, args_p2;
-    pthread_t p1 = -10, p2 = -10;
-    client1_sockfd = -10;
-    client2_sockfd = -10;
+    pthread_t p1 = -11, p2 = -11;
 
     client_len = sizeof(clientaddr);
     if ((server_sockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == -1) {
@@ -85,7 +84,7 @@ int main(int argc, char **argv)
     listen(server_sockfd, 5);
 
     while(1) {
-	if(p1 == -10) {
+	if(p1 == -11) {
 		args_p1.client_sockfd = client1_sockfd;
 		args_p1.server_sockfd = server_sockfd;
 		args_p1.clientaddr = &clientaddr;	// what warning?
@@ -103,7 +102,7 @@ int main(int argc, char **argv)
 		
 		continue;
 	} 
-	else if(p1 != -10 && p2 == -10) {
+	else if(p1 != -11 && p2 == -11) {
 		args_p2.client_sockfd = client2_sockfd;
 		args_p2.server_sockfd = server_sockfd;
 		args_p2.clientaddr = &clientaddr;	// what warning?
