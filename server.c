@@ -49,7 +49,7 @@ void *p_accept(void *argument) {
 
 	while(1) {
 		memset(buf, 0x00, 256);
-		read(arg.client_sockfd, buf, 255);	// 255? 256?
+		read(arg.client_sockfd, buf, 255);
 		if (player_name == 1) {
 			write(client2_sockfd, buf, MAXBUF);
 		}
@@ -89,7 +89,7 @@ int main(int argc, char **argv)
     listen(server_sockfd, 5);
 
     srand(time(NULL));
-    seed = rand() & 0xFF;	// is it write?
+    seed = rand() & 0xFF;
 
     while(1) {
 	if(p1 == -11) {
