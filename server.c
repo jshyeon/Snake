@@ -9,9 +9,12 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <time.h>
+
 #define MAXBUF 256
 
 short lock;
+char seed;
 int client1_sockfd = -10, 
     client2_sockfd = -10;
 
@@ -28,7 +31,6 @@ void *p_accept(void *argument) {
 	int n;
 	short player_name;
 
-	// pthread_detach(pthead_self()); // make this thread independent
 	arg.client_sockfd = accept(arg.server_sockfd, arg.clientaddr, arg.client_len);
 	printf("client_sockfd = %d is connected\n", arg.client_sockfd);
 	lock = 0;
@@ -41,6 +43,9 @@ void *p_accept(void *argument) {
 		player_name = 2;
 	} else {}
 
+	memset(buf, 0x00, 256);
+	strncpy(buf, &seed, sizeof(char));
+	write(arg.client_sockfd, buf, MAXBUF);
 
 	while(1) {
 		memset(buf, 0x00, 256);
@@ -52,8 +57,8 @@ void *p_accept(void *argument) {
 			write(client1_sockfd, buf, MAXBUF);
 		}
 			
-		n = strcmp(buf, "/quit");	// this is the problem;
-		if (!n) {break;}		// this is the problem;
+		n = strcmp(buf, "/quit");	// this could be the problem;
+		if (!n) {break;}		// this could be the problem;
 	}
 	close(arg.client_sockfd);
 	pthread_exit((void *) 0);
@@ -82,6 +87,9 @@ int main(int argc, char **argv)
 
     bind (server_sockfd, (struct sockaddr *)&serveraddr, sizeof(serveraddr));
     listen(server_sockfd, 5);
+
+    srand(time(NULL));
+    seed = rand() & 0xFF;	// is it write?
 
     while(1) {
 	if(p1 == -11) {
@@ -125,35 +133,9 @@ int main(int argc, char **argv)
 	pthread_join(p1, (void **)&status1);
 	pthread_join(p2, (void **)&status2);
 
-printf("client1_sockfd = %d / client2_socfd = %d\n", client1_sockfd, client2_sockfd);
 	printf("Thread End %d %d\n", status1, status2);
 	close(server_sockfd);
 	break;
     }
     return 0;
 }
-/*
-		if (buf[0] != '$') {	case1
-			memset(buf, 0x00, 256);
-			read(arg.client_sockfd, buf, 255);	// 255? 256?
-			
-			n = strcmp(buf, "/quit");	// this is the problem;
-			if (!n) {break;}		// this is the problem;
-			
-			memset(buf, 0x00, MAXBUF);
-			strcpy(buf, "Player Connected!\n");
-			write(arg.client_sockfd, buf, MAXBUF);
-		} else {		case2
-			memset(buf, 0x00, 256);
-			read(arg.client_sockfd, buf, 255);	// 255? 256?
-			if (player_name == 1) {
-				write(client2_sockfd, buf, MAXBUF);
-			}
-			else {
-				write(client1_sockfd, buf, MAXBUF);
-			}
-			
-			n = strcmp(buf, "/quit");	// this is the problem;
-			if (!n) {break;}		// this is the problem;
-		}
-*/
