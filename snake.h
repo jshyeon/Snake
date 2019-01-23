@@ -20,17 +20,18 @@ enum {
 
 class Snake {
 private:
-	vec2 head = { 300,300 };
+	vec2 head;// = { 300,300 };
 	vec2 dir = { 0,0 };
-	std::vector <vec2> body{ head };
+	std::vector <vec2> body;// = { head };
 	vec2 last_movement = { 0,0 };
 
 public:
 	Snake() {}
-	Snake(int X, int Y) {head.x = X; head.y = Y;}
-	std::vector<vec2> Snake::GetBodyPosition(void) {return body;}
-	vec2 Snake::GetDir(void) { return last_movement; }
+	Snake(int X, int Y) {head.x = X; head.y = Y;body.push_back(head);}
+	std::vector<vec2> GetBodyPosition(void) {return body;}
+	vec2 GetDir(void) { return last_movement; }
 	void SetDir(int key);
+	void SetHead(int x, int y) {head.x = x;head.y = y;body.push_back(head);}
 	void Move(void);
 	void Grow(void);
 	bool Eat(vec2);
