@@ -32,6 +32,7 @@ public:
 	void Grow(void);
 	bool Eat(vec2);
 	bool Die(Snake);
+	void Heading(int x, int y);
 	
 };
 

@@ -27,6 +27,10 @@ void Snake::SetDir(int key) {   // KEY_LEFT, KEY_RIGHT, KEY_UP, KEY_DOWN, find t
         dir.y = 1;
     } else {}                   // wrong input -> nothing
 }
+void Snake::Heading(int x, int y) {
+	head.x = x;
+	head.y = y;
+}
 void Snake::Move(void) {        // should i make new vec2 using pointer?
     head.x = head.x + dir.x * 20;
     head.y = head.y + dir.y * 20;

@@ -15,10 +15,15 @@ char buffer_[256];
 char net_input = 'i';
 
 void *thread_func(void *targp) {
+	int i;
+	pthread_detach(pthread_self());
+
  	bzero(buffer_, 256);
 	read(sockfd, buffer_, 256);
 	net_input = buffer_[0];
 	net_ready = 1;
+
+	pthread_exit((void *) 0);
 }
 
 bool init(void) {
@@ -49,11 +54,12 @@ void DrawFood(vec2 food_loc) {
 
 int main(int argc, char **argv)
 {
-	int portno, n, status, status2;
+	int portno, n, status, status2, playerno;
 	struct sockaddr_in serv_addr;
 	struct hostent *server;
 	char buffer[256];
 	char *token;
+	char serv_seed;
 	pthread_t tid;
 
 	if (argc != 2)
@@ -120,15 +126,24 @@ int main(int argc, char **argv)
 
 	al_start_timer(timer);
 
-	Snake snake1p(140,140), snake2p(460,460);
-
-	char serv_seed;
 	bzero(buffer, 256);
-	read(sockfd, buffer, 256);							// read
+	read(sockfd, buffer, 256);
 	// generate first food
 	serv_seed = buffer[0];
 	srand(serv_seed);
 	vec2 food_loc = GenFood();
+
+
+	Snake snake1p, snake2p;
+	// 1p or 2p?
+	bzero(buffer, 256);
+	read(sockfd, buffer, 256);
+	if (buffer[0] == '1') {
+		snake1p.Heading(140,140); snake2p.Heading(460,460);
+	} else {
+		snake1p.Heading(460,460); snake2p.Heading(140,140);
+	}
+	
 
 	bool running = true;
 	while(running) {
