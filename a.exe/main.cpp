@@ -15,10 +15,15 @@ char buffer_[256];
 char net_input = 'i';
 
 void *thread_func(void *targp) {
+	int i;
+	pthread_detach(pthread_self());
+
  	bzero(buffer_, 256);
 	read(sockfd, buffer_, 256);
 	net_input = buffer_[0];
 	net_ready = 1;
+
+	pthread_exit((void *) 0);
 }
 
 bool init(void) {
