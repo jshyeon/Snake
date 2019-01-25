@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#define SCALE 20
 typedef struct {
 	int x;
 	int y;

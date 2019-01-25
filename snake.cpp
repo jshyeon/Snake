@@ -3,6 +3,7 @@
 #include "snake.h"
 using namespace std;
 
+
 //int size = 20;                  // it isn't read
 
 void Snake::SetDir(int key) {   // KEY_LEFT, KEY_RIGHT, KEY_UP, KEY_DOWN, find these numbers
@@ -21,8 +22,8 @@ void Snake::SetDir(int key) {   // KEY_LEFT, KEY_RIGHT, KEY_UP, KEY_DOWN, find t
     } else {}                   // wrong input -> nothing
 }
 void Snake::Move(void) {        // should i make new vec2 using pointer?
-    head.x = head.x + dir.x * 20;
-    head.y = head.y + dir.y * 20;
+    head.x = head.x + dir.x;
+    head.y = head.y + dir.y;
     body.insert(body.begin(), head);
     body.pop_back();
 	
@@ -30,12 +31,12 @@ void Snake::Move(void) {        // should i make new vec2 using pointer?
 	last_movement.y = dir.y;
 }
 void Snake::Grow(void) {        // it will be positioned after "Eat"
-	head.x = head.x + dir.x * 20;
-	head.y = head.y + dir.y * 20;
+	head.x = head.x + dir.x;
+	head.y = head.y + dir.y;
 	body.insert(body.begin(), head);
 }
 bool Snake::Eat(vec2 food) {    // it should be positioned after "move", so I can check whether the head touch the food
-    if (head.x + dir.x*20 == food.x && head.y + dir.y*20 == food.y) {
+    if (head.x + dir.x == food.x && head.y + dir.y == food.y) {
         return true;
     }
 	return false;
@@ -56,8 +57,8 @@ bool Snake::Die(Snake snake2) {         // 1. hit my body(trouble with grow / so
 	}
 
     // condition 3
-    if (head.x > 580 || head.x <0) {return true;}
-    if (head.y > 580 || head.y <0) {return true;}
+    if (head.x > 29 || head.x <0) {return true;}
+    if (head.y > 29 || head.y <0) {return true;}
 
     return false;
 }

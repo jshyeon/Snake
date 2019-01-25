@@ -1,6 +1,8 @@
-// sholud put '-pthread' option in compile
-// ex) gcc -pthread -o a a.c
-
+/********************************************************************
+ * TODO: 															*
+ * 1. HOw to synchronize read/wirte and game loop					*
+ * 2. Make a package structure to send locations coords(52bytes)	*
+ ********************************************************************/
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <arpa/inet.h>
@@ -11,10 +13,12 @@
 #include <pthread.h>
 #include <time.h>
 
+#include "snake.h"
+
 #define MAXBUF 256
 
 short lock;
-char seed, seed2;
+//char seed, seed2;
 int client1_sockfd = -10,
 	client2_sockfd = -10;
 
@@ -24,6 +28,7 @@ struct args
 	int server_sockfd;
 	struct sockaddr *clientaddr;
 	int *client_len;
+	Snake snake;
 };
 
 void *p_accept(void *argument)
@@ -50,46 +55,43 @@ void *p_accept(void *argument)
 	else
 	{
 	}
+
+/*****************************************
+// not the seed. give the coords set.
+*****************************************/
 	printf("seed: %i", seed);
 	memset(buf, 0x00, 256);
-	seed2 = seed | 0x10;
-	if (player_name == 1)
-	{
-		strncpy(buf, &seed, sizeof(char));
-		write(arg.client_sockfd, buf, MAXBUF);
-	}
-	else
-	{
-		strncpy(buf, &seed2, sizeof(char));
-		write(arg.client_sockfd, buf, MAXBUF);
-	}
+	strncpy(buf, &seed, sizeof(char));
+	write(arg.client_sockfd, buf, MAXBUF);
 	printf("buf value: %i", buf[0]);
+
 	while (1)
 	{
 		memset(buf, 0x00, 256);
-		read(arg.client_sockfd, buf, 255);
-		if (player_name == 1)
-		{
-			write(client2_sockfd, buf, MAXBUF);
-		}
-		else
-		{
-			write(client1_sockfd, buf, MAXBUF);
-		}
+		read(arg.client_sockfd, buf, 1);
+/**************************************************************
+// after simulation the game and allocate coords to buf[]
+**************************************************************/
+		write(arg.client_sockfd, buf, 52);
 
-		n = strcmp(buf, "/quit"); // this could be the problem;
-		if (!n)
-		{
-			break;
-		} // this could be the problem;
 	}
 	close(arg.client_sockfd);
 	pthread_exit((void *)0);
 	return argument;
 }
 
+vec2 GenFood(void)
+{
+	vec2 food_loc;
+	food_loc.x = (rand() % 30) * 20;
+	food_loc.y = (rand() % 30) * 20;
+	return food_loc;
+}
+
 int main(int argc, char **argv)
 {
+	vec2 food_loc = GenFood();
+
 	int server_sockfd, client1_sockfd, client2_sockfd, client_len;
 	int n, status1, status2;
 	char buf[MAXBUF];
@@ -113,16 +115,20 @@ int main(int argc, char **argv)
 	listen(server_sockfd, 5);
 
 	srand(time(NULL));
-	seed = rand() & 0x0F;
+	//seed = rand() & 0x0F;
 
 	while (1)
 	{
+		/**************************************************
+		 * Creating & waiting connection
+		 *************************************************/
 		if (p1 == -11)
 		{
 			args_p1.client_sockfd = client1_sockfd;
 			args_p1.server_sockfd = server_sockfd;
 			args_p1.clientaddr = &clientaddr; // what warning?
 			args_p1.client_len = &client_len;
+			args_p1.snake.setHead(140,140);
 
 			lock = 1;
 
@@ -143,6 +149,7 @@ int main(int argc, char **argv)
 			args_p2.server_sockfd = server_sockfd;
 			args_p2.clientaddr = &clientaddr; // what warning?
 			args_p2.client_len = &client_len;
+			args_p2.snake.setHead(460,460);
 
 			lock = 1;
 
@@ -157,8 +164,52 @@ int main(int argc, char **argv)
 
 			continue;
 		}
-		else
+		
+		/**************************************
+		 * simulate the game
+		 * 
+		 * make this part have tick count
+		 * which means having period 0.25 second
+		 * ***********************************/
+		else if (p1 != -11 && p2 != -11)
 		{
+			printf("ready for game loop\n");
+
+			if (!args_p1.snake.Die(args_p2.snake) && !args_p2.snake.Die(args_p1.snake))
+			{
+				if (args_p1.snake.Eat(food_loc))
+				{
+					args_p1.snake.Grow();
+					//args_p2.snake.Move();
+					food_loc = GenFood();
+				}
+				else if (args_p2.snake.Eat(food_loc))
+				{
+					args_p2.snake.Grow();
+					//args_p1.snake.Move();
+					food_loc = GenFood();
+				}
+				else
+				{
+					args_p1.snake.Move();
+					args_p2.snake.Move();
+				}
+			}
+			else if (args_p1.snake.Die(args_p2.snake) && args_p2.snake.Die(args_p1.snake))
+			{
+				printf("player 1 dead!\n");
+				break;
+			}
+			else if (args_p2.snake.Die(args_p1.snake) && !args_p1.snake.Die(args_p2.snake))
+			{
+				printf("Player 2 dead!\n");
+				break;
+			}
+			else if (args_p1.snake.Die(args_p2.snake) && args_p2.snake.Die(args_p1.snake))
+			{
+				printf("Players Draw!\n");
+				break;
+			}
 		}
 
 		pthread_join(p1, (void **)&status1);
