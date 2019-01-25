@@ -70,11 +70,10 @@ int main(int argc, char *argv[]) {
     printf("You: ");
     bzero(buffer,256);
     scanf("%s", buffer); // this does not allow blank char
-    write(sockfd, buffer, sizeof(char));
+    write(sockfd, buffer, 256);
     n = strcmp(buffer, "/quit");
     if (!n)
       break;
-    bzero(buffer, 256);
     read(sockfd, buffer, 256);
     printf("Opponent: %s\n", buffer);
 
