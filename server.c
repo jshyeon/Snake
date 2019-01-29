@@ -18,7 +18,7 @@
 #define MAXBUF 256
 
 short lock;
-//char seed, seed2;
+//char seed;//, seed2;
 int client1_sockfd = -10,
 	client2_sockfd = -10;
 
@@ -57,8 +57,10 @@ void *p_accept(void *argument)
 	}
 
 /*****************************************
-// not the seed. give the coords set.
+* not the seed. give the coords set.
 *****************************************/
+	
+
 	printf("seed: %i", seed);
 	memset(buf, 0x00, 256);
 	strncpy(buf, &seed, sizeof(char));
@@ -70,9 +72,9 @@ void *p_accept(void *argument)
 		memset(buf, 0x00, 256);
 		read(arg.client_sockfd, buf, 1);
 /**************************************************************
-// after simulation the game and allocate coords to buf[]
+* after simulation the game and allocate coordinates to buf[] *
 **************************************************************/
-		write(arg.client_sockfd, buf, 52);
+		write(arg.client_sockfd, buf, 65);
 
 	}
 	close(arg.client_sockfd);
@@ -83,14 +85,14 @@ void *p_accept(void *argument)
 vec2 GenFood(void)
 {
 	vec2 food_loc;
-	food_loc.x = (rand() % 30) * 20;
-	food_loc.y = (rand() % 30) * 20;
+	food_loc.x = rand() % 16;
+	food_loc.y = rand() % 16;
 	return food_loc;
 }
 
 int main(int argc, char **argv)
 {
-	vec2 food_loc = GenFood();
+	vec2 food_loc;// = GenFood();
 
 	int server_sockfd, client1_sockfd, client2_sockfd, client_len;
 	int n, status1, status2;
@@ -115,8 +117,9 @@ int main(int argc, char **argv)
 	listen(server_sockfd, 5);
 
 	srand(time(NULL));
+	food_loc = GenFood();
 	//seed = rand() & 0x0F;
-
+	
 	while (1)
 	{
 		/**************************************************
@@ -128,7 +131,7 @@ int main(int argc, char **argv)
 			args_p1.server_sockfd = server_sockfd;
 			args_p1.clientaddr = &clientaddr; // what warning?
 			args_p1.client_len = &client_len;
-			args_p1.snake.setHead(140,140);
+			args_p1.snake.setHead(3,3);
 
 			lock = 1;
 
@@ -149,7 +152,7 @@ int main(int argc, char **argv)
 			args_p2.server_sockfd = server_sockfd;
 			args_p2.clientaddr = &clientaddr; // what warning?
 			args_p2.client_len = &client_len;
-			args_p2.snake.setHead(460,460);
+			args_p2.snake.setHead(12,12);
 
 			lock = 1;
 
