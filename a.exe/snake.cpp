@@ -4,8 +4,19 @@
 using namespace std;
 
 //int size = 20;                  // it isn't read
-
-
+void Snake::CmpHead() {
+	if (head.x == net_head.x && head.y == net_head.y) {
+		return;
+	}
+	else {
+		Heading(net_head.x, net_head.y);	// I'm not sure
+	}
+}
+vec2 Snake::NetHead(int X, int Y) {
+	net_head.x = X;
+	net_head.y = Y;
+	return Snake::net_head;
+}
 vector <vec2> Snake::GetBodyPosition(void) {
 	return Snake::body;
 }
@@ -37,8 +48,8 @@ void Snake::Move(void) {        // should i make new vec2 using pointer?
     body.insert(body.begin(), head);
     body.pop_back();
 	
-	last_movement.x = dir.x;
-	last_movement.y = dir.y;
+    last_movement.x = dir.x;
+    last_movement.y = dir.y;
 }
 void Snake::Grow(void) {        // it will be positioned after "Eat"
 	head.x = head.x + dir.x * 20;
@@ -51,21 +62,18 @@ bool Snake::Eat(vec2 food) {    // it should be positioned after "move", so I ca
     }
 	return false;
 }
-bool Snake::Die(Snake snake2) {         // 1. hit my body(trouble with grow / solution: "Grow"->"Die" order), 2. push exact reverse direction, 
-                                // 3. hit wall, 4. hit other worm, "5. hit other worm face to face" : condition 1 & 3
-    /*bool D;                   is it necessary?*/
+bool Snake::Die(Snake snake2) {
     // condition 1
     for (vector<vec2>::iterator a = body.begin()+1; a != body.end(); a++) {
         if (head.x == a->x && head.y == a->y) {
             return true;
-        }// else {}
+        }
     }
-	// condition collision
-	vector<vec2> body2 = snake2.GetBodyPosition();
-	for (vector<vec2>::iterator a = body2.begin(); a != body2.end(); a++) {
-		if (head.x == a->x && head.y == a->y) return true;
-	}
-
+    // condition collision
+    vector<vec2> body2 = snake2.GetBodyPosition();
+    for (vector<vec2>::iterator a = body2.begin(); a != body2.end(); a++) {
+        if (head.x == a->x && head.y == a->y) return true;
+    }
     // condition 3
     if (head.x > 580 || head.x <0) {return true;}
     if (head.y > 580 || head.y <0) {return true;}

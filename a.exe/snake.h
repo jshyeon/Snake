@@ -17,10 +17,11 @@ enum {
 
 class Snake {
 private:
-	vec2 head = { 300,300 };
-	vec2 dir = { 0,0 };
+	vec2 head = {300, 300};
+	vec2 dir = {0, 0};
 	std::vector <vec2> body{ head };
-	vec2 last_movement = { 0,0 };
+	vec2 last_movement = {0, 0};
+	vec2 net_head = {0, 0};
 
 public:
 	Snake() {}
@@ -30,9 +31,11 @@ public:
 	void SetDir(int key);
 	void Move(void);
 	void Grow(void);
+	void CmpHead();
 	bool Eat(vec2);
 	bool Die(Snake);
 	void Heading(int x, int y);
+	vec2 NetHead(int X, int Y);
 	
 };
 
